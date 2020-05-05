@@ -1,4 +1,4 @@
-use crate::any::{ProvideResult, Request};
+use crate::any::Request;
 use core::fmt::{Debug, Display};
 
 pub trait Error: Debug + Display {
@@ -6,9 +6,7 @@ pub trait Error: Debug + Display {
         None
     }
 
-    fn get_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
-        Ok(request)
-    }
+    fn get_context<'a>(&'a self, _request: &mut Request<'a>) {}
 
     fn description(&self) -> &str {
         "description() is deprecated; use Display"

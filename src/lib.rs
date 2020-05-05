@@ -1,6 +1,6 @@
 #![feature(min_specialization)]
 #![feature(track_caller)]
-use fakecore::any::{ProvideResult, Request};
+use fakecore::any::Request;
 use fakecore::error::Error;
 use fakecore::track::Track;
 use std::fmt;
@@ -33,10 +33,10 @@ impl fmt::Display for ExampleError {
 }
 
 impl Error for ExampleError {
-    fn get_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
+    fn get_context<'a>(&'a self, request: &mut Request<'a>) {
         request
-            .provide::<Vec<&'static Location<'static>>>(&self.frames)?
-            .provide::<[&'static Location<'static>]>(&self.frames)
+            .provide::<Vec<&'static Location<'static>>>(&self.frames)
+            .provide::<[&'static Location<'static>]>(&self.frames);
     }
 }
 
@@ -72,9 +72,9 @@ impl Error for ExampleWrappingError {
         Some(&self.source)
     }
 
-    fn get_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
+    fn get_context<'a>(&'a self, request: &mut Request<'a>) {
         request
-            .provide::<Vec<&'static Location<'static>>>(&self.frames)?
-            .provide::<[&'static Location<'static>]>(&self.frames)
+            .provide::<Vec<&'static Location<'static>>>(&self.frames)
+            .provide::<[&'static Location<'static>]>(&self.frames);
     }
 }
