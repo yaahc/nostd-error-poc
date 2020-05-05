@@ -6,7 +6,7 @@ pub trait Error: Debug + Display {
         None
     }
 
-    fn get_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
+    fn provide_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
         Ok(request)
     }
 
@@ -21,7 +21,7 @@ pub trait Error: Debug + Display {
 
 impl dyn Error {
     pub fn context<T: ?Sized + 'static>(&self) -> Option<&T> {
-        Request::with::<T, _>(|req| self.get_context(req))
+        Request::with::<T, _>(|req| self.provide_context(req))
     }
 
     pub fn chain(&self) -> Chain<'_> {

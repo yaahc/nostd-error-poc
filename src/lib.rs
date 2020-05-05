@@ -33,7 +33,7 @@ impl fmt::Display for ExampleError {
 }
 
 impl Error for ExampleError {
-    fn get_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
+    fn provide_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
         request
             .provide::<Vec<&'static Location<'static>>>(&self.frames)?
             .provide::<[&'static Location<'static>]>(&self.frames)
@@ -72,7 +72,7 @@ impl Error for ExampleWrappingError {
         Some(&self.source)
     }
 
-    fn get_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
+    fn provide_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
         request
             .provide::<Vec<&'static Location<'static>>>(&self.frames)?
             .provide::<[&'static Location<'static>]>(&self.frames)
