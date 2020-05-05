@@ -97,23 +97,15 @@ impl<'a> fmt::Debug for Request<'a> {
     }
 }
 
-/// Low level buffer API used to create typed object requests.
-///
-/// Due to a heavy dependency on [`Pin`], this type is inconvenient to use
-/// directly. Prefer using the [`Request::with`] API when possible.
 // Needs to have a known layout so we can do unsafe pointer shenanigans.
 #[repr(C)]
-#[derive(Debug)]
-pub struct RequestBuf<'a, T: ?Sized + 'static> {
+struct RequestBuf<'a, T: ?Sized + 'static> {
     request: Request<'a>,
     value: Option<&'a T>,
 }
 
 impl<'a, T: ?Sized + 'static> RequestBuf<'a, T> {
-    /// Create a new `RequestBuf` object.
-    ///
-    /// This type must be pinned before it can be used.
-    pub fn new() -> Self {
+    fn new() -> Self {
         RequestBuf {
             request: Request {
                 type_id: TypeId::of::<T>(),
@@ -124,21 +116,13 @@ impl<'a, T: ?Sized + 'static> RequestBuf<'a, T> {
         }
     }
 
-    /// Get the untyped `Request` reference for this `RequestBuf`.
-    pub fn request(self: Pin<&mut Self>) -> Pin<&mut Request<'a>> {
+    fn request(self: Pin<&mut Self>) -> Pin<&mut Request<'a>> {
         // safety: projecting Pin onto our `request` field.
         unsafe { self.map_unchecked_mut(|this| &mut this.request) }
     }
 
-    /// Take a value previously provided to this `RequestBuf`.
-    pub fn take(self: Pin<&mut Self>) -> Option<&'a T> {
+    fn take(self: Pin<&mut Self>) -> Option<&'a T> {
         // safety: `Option<&'a T>` is `Unpin`
         unsafe { self.get_unchecked_mut().value.take() }
-    }
-}
-
-impl<'a, T: ?Sized + 'static> Default for RequestBuf<'a, T> {
-    fn default() -> Self {
-        Self::new()
     }
 }
