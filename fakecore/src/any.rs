@@ -2,6 +2,7 @@ use core::any::TypeId;
 use core::cell::Cell;
 use core::fmt;
 use core::marker::PhantomData;
+use core::marker::PhantomPinned;
 use core::pin::Pin;
 
 /// A dynamic request for an object based on its type.
@@ -22,7 +23,7 @@ impl<'out> Request<'out> {
     ///
     /// This method can be chained within `provide` implementations using the
     /// `?` operator to concisely provide multiple objects.
-    pub fn provide<T: ?Sized + 'static>(&mut self, value: &'out T) -> &mut Self {
+    pub fn provide<T: ?Sized + 'static>(self: Pin<&mut Self>, value: &'out T) -> Pin<&mut Self> {
         self.provide_with(|| value)
     }
 
@@ -36,7 +37,7 @@ impl<'out> Request<'out> {
     ///
     /// This method can be chained within `provide` implementations using the
     /// `?` operator to concisely provide multiple objects.
-    pub fn provide_with<T: ?Sized + 'static, F>(&mut self, cb: F) -> &mut Self
+    pub fn provide_with<T: ?Sized + 'static, F>(self: Pin<&mut Self>, cb: F) -> Pin<&mut Self>
     where
         F: FnOnce() -> &'out T,
     {
@@ -48,6 +49,7 @@ impl<'out> Request<'out> {
             );
             this.value = Some(cb());
         }
+
         self
     }
 
@@ -72,11 +74,12 @@ impl<'out> Request<'out> {
     {
         let mut buf = RequestBuf {
             type_id: TypeId::of::<T>(),
+            _pinned: PhantomPinned,
             value: None,
         };
         unsafe {
             let request = &mut *(&mut buf as *mut _ as *mut Request);
-            f(Pin::new(request));
+            f(Pin::new_unchecked(request));
         }
         buf.value
     }
@@ -94,5 +97,6 @@ impl<'out> fmt::Debug for Request<'out> {
 #[repr(C)]
 struct RequestBuf<T: ?Sized> {
     type_id: TypeId,
+    _pinned: PhantomPinned,
     value: T,
 }
