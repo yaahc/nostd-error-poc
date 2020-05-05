@@ -1,14 +1,13 @@
-use crate::any::{ProvideResult, Request};
+use crate::any::Request;
 use core::fmt::{Debug, Display};
+use core::pin::Pin;
 
 pub trait Error: Debug + Display {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
     }
 
-    fn provide_context<'r, 'a>(&'a self, request: Request<'r, 'a>) -> ProvideResult<'r, 'a> {
-        Ok(request)
-    }
+    fn provide_context<'a>(&'a self, _request: Pin<&mut Request<'a>>) {}
 
     fn description(&self) -> &str {
         "description() is deprecated; use Display"
