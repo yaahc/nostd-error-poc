@@ -34,7 +34,7 @@ impl fmt::Display for ExampleError {
 }
 
 impl Error for ExampleError {
-    fn provide_context<'a>(&'a self, mut request: Pin<&mut Request<'a>>) {
+    fn provide_context<'a>(&'a self, request: Pin<&mut Request<'a>>) {
         request
             .provide::<Vec<&'static Location<'static>>>(&self.frames)
             .provide::<[&'static Location<'static>]>(&self.frames);
@@ -73,7 +73,7 @@ impl Error for ExampleWrappingError {
         Some(&self.source)
     }
 
-    fn provide_context<'a>(&'a self, mut request: Pin<&mut Request<'a>>) {
+    fn provide_context<'a>(&'a self, request: Pin<&mut Request<'a>>) {
         request
             .provide::<Vec<&'static Location<'static>>>(&self.frames)
             .provide::<[&'static Location<'static>]>(&self.frames);
