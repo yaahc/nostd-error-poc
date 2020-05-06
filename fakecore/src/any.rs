@@ -79,7 +79,7 @@ impl<'a> Request<'a> {
     /// `Some(&T)` if the request was fulfilled, and `None` otherwise.
     pub fn with<T: ?Sized + 'static, F>(f: F) -> Option<&'a T>
     where
-        F: FnOnce(Pin<&mut Request<'a>>),
+        F: FnOnce(Pin<&mut Self>),
     {
         let mut buf = RequestBuf::new();
         // safety: We never move `buf` after creating `pinned`.
