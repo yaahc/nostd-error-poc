@@ -1,8 +1,6 @@
 #![allow(unused_variables)]
 use crate::any::Request;
 use core::fmt::{Debug, Display};
-use core::pin::Pin;
-
 pub trait Error: Debug + Display {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
@@ -16,7 +14,6 @@ pub trait Error: Debug + Display {
     /// # Example
     ///
     /// ```rust
-    /// use core::pin::Pin;
     /// use backtrace::Backtrace;
     /// use core::fmt;
     /// use fakecore::any::Request;
@@ -38,16 +35,14 @@ pub trait Error: Debug + Display {
     ///     }
     /// }
     ///
-    /// fn main() {
-    ///     let backtrace = Backtrace::new();
-    ///     let error = Error { backtrace };
-    ///     let dyn_error = &error as &dyn fakecore::error::Error;
-    ///     let backtrace_ref = dyn_error.context::<Backtrace>().unwrap();
+    /// let backtrace = Backtrace::new();
+    /// let error = Error { backtrace };
+    /// let dyn_error = &error as &dyn fakecore::error::Error;
+    /// let backtrace_ref = dyn_error.context::<Backtrace>().unwrap();
     ///
-    ///     assert!(core::ptr::eq(&error.backtrace, backtrace_ref));
-    /// }
+    /// assert!(core::ptr::eq(&error.backtrace, backtrace_ref));
     /// ```
-    fn provide_context<'a>(&'a self, request: Pin<&mut Request<'a>>) {}
+    fn provide_context<'a>(&'a self, request: &mut Request<'a>) {}
 
     fn description(&self) -> &str {
         "description() is deprecated; use Display"
@@ -59,8 +54,12 @@ pub trait Error: Debug + Display {
 }
 
 impl dyn Error {
-    pub fn context<T: ?Sized + 'static>(&self) -> Option<&T> {
-        Request::with::<T, _>(|req| self.provide_context(req))
+    pub fn context_ref<T: ?Sized + 'static>(&self) -> Option<&T> {
+        Request::request_ref(|req| self.provide_context(req))
+    }
+
+    pub fn context<T: 'static>(&self) -> Option<T> {
+        Request::request_value(|req| self.provide_context(req))
     }
 
     pub fn chain(&self) -> Chain<'_> {

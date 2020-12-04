@@ -44,7 +44,7 @@ pub fn report(error: &(dyn Error + 'static)) {
 
     let locations = error
         .chain()
-        .filter_map(|e| e.context::<[&'static Location<'static>]>())
+        .filter_map(|e| e.context_ref::<[&'static Location<'static>]>())
         .flat_map(|locs| locs.iter());
 
     println!("\nFull Return Trace:");
