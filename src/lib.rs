@@ -1,5 +1,5 @@
 #![feature(min_specialization)]
-use fakecore::any::Request;
+use fakecore::any::provider::Request;
 use fakecore::error::Error;
 use fakecore::track::Track;
 use std::fmt;

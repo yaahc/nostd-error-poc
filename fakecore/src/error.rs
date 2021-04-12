@@ -1,5 +1,5 @@
 #![allow(unused_variables)]
-use crate::any::Request;
+use crate::any::provider::Request;
 use core::fmt::{Debug, Display};
 pub trait Error: Debug + Display {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
@@ -55,11 +55,13 @@ pub trait Error: Debug + Display {
 
 impl dyn Error {
     pub fn context_ref<T: ?Sized + 'static>(&self) -> Option<&T> {
-        Request::request_ref(|req| self.provide_context(req))
+        use crate::any::tag::Ref;
+        crate::any::provider::request::<Ref<T>, _>(|request| self.provide_context(request))
     }
 
     pub fn context<T: 'static>(&self) -> Option<T> {
-        Request::request_value(|req| self.provide_context(req))
+        use crate::any::tag::Value;
+        crate::any::provider::request::<Value<T>, _>(|request| self.provide_context(request))
     }
 
     pub fn chain(&self) -> Chain<'_> {
